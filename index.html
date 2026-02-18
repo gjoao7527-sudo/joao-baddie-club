@@ -1,119 +1,132 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Treino BJ</title>
-<link rel="manifest" href="manifest.json">
-
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#fff;
-  --card:#f2f2f7;
-  --text:#000;
-  --accent:#000;
-}
-
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#000;
-    --card:#111;
-    --text:#fff;
-    --accent:#fff;
-  }
-}
 
 body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  padding:20px;
+margin:0;
+font-family:'SF Pro Display', sans-serif;
+background:#0f0f0f;
+color:white;
 }
 
-.hidden{display:none;}
+h1{
+text-align:center;
+font-weight:700;
+margin-top:20px;
+}
+
+.container{
+padding:20px;
+max-width:500px;
+margin:auto;
+}
 
 .card{
-  background:var(--card);
-  border-radius:28px;
-  padding:20px;
-  margin-bottom:25px;
-  box-shadow:0 15px 40px rgba(0,0,0,0.1);
-}
-
-button{
-  background:var(--accent);
-  color:var(--bg);
-  border:none;
-  padding:10px 18px;
-  border-radius:20px;
-  cursor:pointer;
-  margin:5px 0;
+background:#1c1c1e;
+padding:20px;
+border-radius:25px;
+margin-bottom:20px;
+box-shadow:0 8px 20px rgba(0,0,0,0.4);
 }
 
 .day{
-  padding:14px;
-  border-radius:18px;
-  margin-bottom:12px;
-  cursor:pointer;
-  background:rgba(0,0,0,0.05);
-  transition:0.3s;
+padding:15px;
+border-radius:18px;
+margin-bottom:10px;
+background:#2c2c2e;
+cursor:pointer;
+transition:0.3s;
 }
 
-.day.completed{
-  background:rgba(0,0,0,0.25);
+.day:hover{
+background:#3a3a3c;
 }
 
 .exercise{
-  display:flex;
-  justify-content:space-between;
-  padding:12px 0;
-  border-bottom:1px solid rgba(0,0,0,0.08);
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin:8px 0;
 }
 
 .done{
-  text-decoration:line-through;
-  opacity:0.4;
+opacity:0.5;
 }
 
 .progress-bar{
-  height:8px;
-  background:rgba(0,0,0,0.1);
-  border-radius:10px;
-  margin:15px 0;
+height:8px;
+background:#2c2c2e;
+border-radius:10px;
+overflow:hidden;
+margin-top:10px;
 }
 
-.progress-fill{
-  height:100%;
-  width:0%;
-  background:var(--accent);
-  border-radius:10px;
-  transition:0.4s;
+.progress{
+height:100%;
+background:linear-gradient(90deg,#ff375f,#ff9f0a);
+width:0%;
+transition:0.4s;
+}
+
+button{
+background:#ff375f;
+border:none;
+padding:10px;
+border-radius:12px;
+color:white;
+cursor:pointer;
+margin-top:10px;
+width:100%;
+}
+
+input{
+width:100%;
+padding:10px;
+border-radius:12px;
+border:none;
+margin-bottom:10px;
 }
 
 .badge{
-  font-size:14px;
-  padding:6px 12px;
-  border-radius:15px;
-  background:gold;
-  color:#000;
-  display:inline-block;
-  margin-top:10px;
+background:#ff9f0a;
+padding:8px;
+border-radius:15px;
+margin-top:10px;
+display:inline-block;
+font-size:14px;
 }
+
+.hidden{
+display:none;
+}
+
 </style>
 </head>
-
 <body>
 
-<div id="loginScreen" class="card">
-<h2>Entrar</h2>
-<button onclick="login('Joao')">João</button>
-<button onclick="login('Beatriz')">Beatriz</button>
+<h1>Treino BJ</h1>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="loginCard" class="card">
+<h3>Login</h3>
+<select id="userSelect">
+<option value="joao">João</option>
+<option value="beatriz">Beatriz</option>
+</select>
+<input type="password" id="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+<p id="loginErro"></p>
 </div>
 
+<!-- APP -->
 <div id="app" class="hidden">
-
-<h2 id="welcome"></h2>
 
 <div class="card">
 <h3>Estatísticas</h3>
@@ -121,106 +134,114 @@ button{
 <p id="streak"></p>
 <div id="badgeArea"></div>
 
+<h4>Histórico</h4>
+<div id="historicoLista"></div>
+
 <h4>Meta Personalizada</h4>
 <input type="number" id="metaInput" placeholder="Treinos por semana">
 <button onclick="salvarMeta()">Salvar Meta</button>
 <p id="metaStatus"></p>
 
-<h4>Histórico</h4>
-<div id="historicoLista"></div>
 </div>
 
 <div class="card">
 <h3>Treinos</h3>
-
-<div class="day" data-dia="segunda" onclick="abrirTreino('segunda')">🍑 Segunda – Glúteo</div>
-<div class="day" data-dia="terca" onclick="abrirTreino('terca')">💪 Terça – Costas + Bíceps</div>
-<div class="day" data-dia="quarta" onclick="abrirTreino('quarta')">🍑 Quarta – Posterior + Glúteo</div>
-<div class="day" data-dia="quinta" onclick="abrirTreino('quinta')">🧍 Quinta – Ombro + Postura</div>
-<div class="day" data-dia="sexta" onclick="abrirTreino('sexta')">🍑 Sexta – Quadríceps + Glúteo</div>
-<div class="day" data-dia="sabado" onclick="abrirTreino('sabado')">🔥 Sábado – Superior + Abdômen</div>
-<div class="day" data-dia="domingo" onclick="abrirTreino('domingo')">🏃 Domingo – Cardio</div>
-
-<div id="treinoBox"></div>
-
+<div id="dias"></div>
 </div>
 
+<div class="card hidden" id="treinoBox">
+<h3 id="treinoTitulo"></h3>
+<div id="exercicios"></div>
+<div class="progress-bar">
+<div class="progress" id="barra"></div>
+</div>
+<button onclick="finalizarTreino()">Finalizar Treino</button>
+</div>
+
+</div>
 </div>
 
 <script>
 
-let usuario = localStorage.getItem("usuario");
-let progresso = {};
-let historico = {};
-let metaPersonalizada = 5;
+const senhas={
+joao:"1234",
+beatriz:"1234"
+};
 
-if(usuario) iniciarApp();
+let usuario=null;
+let progresso={};
+let historico={};
+let metaPersonalizada=5;
 
-function login(nome){
-usuario = nome;
-localStorage.setItem("usuario",nome);
-iniciarApp();
+function login(){
+let user=document.getElementById("userSelect").value;
+let pass=document.getElementById("password").value;
+
+if(pass===senhas[user]){
+usuario=user;
+document.getElementById("loginCard").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+carregarDados();
+}else{
+document.getElementById("loginErro").innerText="Senha incorreta";
+}
 }
 
-function iniciarApp(){
-document.getElementById("loginScreen").classList.add("hidden");
-document.getElementById("app").classList.remove("hidden");
-document.getElementById("welcome").innerText="Olá, "+usuario;
-
-progresso = JSON.parse(localStorage.getItem(usuario+"_progresso")) || {};
-historico = JSON.parse(localStorage.getItem(usuario+"_historico")) || {};
-metaPersonalizada = localStorage.getItem(usuario+"_meta") || 5;
-
+function carregarDados(){
+progresso=JSON.parse(localStorage.getItem(usuario+"_progresso"))||{};
+historico=JSON.parse(localStorage.getItem(usuario+"_historico"))||{};
+metaPersonalizada=localStorage.getItem(usuario+"_meta")||5;
+criarDias();
 atualizarStats();
-marcarDiasConcluidos();
+}
+
+const treinos={
+"Segunda":{rep:"4x 8–12",ex:["Elevação pélvica","Elevação pélvica unilateral","Cadeira abdutora","Glúteo no cabo","Afundo no smith"],cardio:"15–20 min caminhada na esteira"},
+"Terça":{rep:"3–4x 10–12",ex:["Puxada frontal","Remada baixa","Remada unilateral","Rosca direta","Rosca alternada","Rosca martelo"],cardio:"15 min HIIT"},
+"Quarta":{rep:"4x 8–12",ex:["Stiff","Mesa flexora","Passada","Glúteo 4 apoios","Elevação pélvica","Cadeira abdutora"],cardio:"15–20 min caminhada"},
+"Quinta":{rep:"3x 12–15",ex:["Elevação lateral","Desenvolvimento","Elevação frontal","Face pull","Crucifixo inverso","Remada alta"],cardio:"15 min leve"},
+"Sexta":{rep:"4x 8–12",ex:["Agachamento","Leg press","Cadeira extensora","Afundo búlgaro","Agachamento sumô","Cadeira abdutora"],cardio:"15–20 min caminhada"},
+"Sábado":{rep:"3x 10–12",ex:["Puxada frontal","Remada baixa","Elevação lateral","Rosca direta","Tríceps corda","Desenvolvimento","Prancha","Abdominal infra"],cardio:"10–15 min leve"},
+"Domingo":{rep:"Cardio livre",ex:["Caminhada ou corrida leve"],cardio:"30–40 min caminhada ou 20+10 corrida"}
+};
+
+function criarDias(){
+let diasDiv=document.getElementById("dias");
+diasDiv.innerHTML="";
+Object.keys(treinos).forEach(d=>{
+let div=document.createElement("div");
+div.className="day";
+div.innerText=d;
+div.onclick=()=>abrirTreino(d);
+diasDiv.appendChild(div);
+});
 }
 
 function abrirTreino(dia){
-
-const treinos={
-
-segunda:{rep:"4x 8–12",ex:["Elevação pélvica","Elevação pélvica unilateral","Cadeira abdutora","Glúteo no cabo","Afundo no smith"],cardio:"15–20 min caminhada normal na esteira"},
-
-terca:{rep:"3–4x 10–12",ex:["Puxada frontal","Remada baixa","Remada unilateral","Rosca direta","Rosca alternada","Rosca martelo"],cardio:"15 min HIIT (30s corrida + 1min andando)"},
-
-quarta:{rep:"4x 8–12",ex:["Stiff","Mesa flexora","Passada","Glúteo 4 apoios","Elevação pélvica","Cadeira abdutora"],cardio:"15–20 min caminhada moderada"},
-
-quinta:{rep:"3x 12–15",ex:["Elevação lateral","Desenvolvimento com halteres","Elevação frontal","Face pull","Crucifixo inverso","Remada alta"],cardio:"15 min corrida leve"},
-
-sexta:{rep:"4x 8–12",ex:["Agachamento","Leg press","Cadeira extensora","Afundo búlgaro","Agachamento sumô","Cadeira abdutora"],cardio:"15–20 min caminhada moderada"},
-
-sabado:{rep:"3x 10–12",ex:["Puxada frontal","Remada baixa","Elevação lateral","Rosca direta","Tríceps corda","Desenvolvimento com halteres","Prancha 3x 30–60s","Abdominal infra 3x 15"],cardio:"10–15 min leve"},
-
-domingo:{rep:"",ex:["30–40 min caminhada OU 20 min caminhada + 10 min corrida leve"],cardio:""}
-
-};
-
-let box=document.getElementById("treinoBox");
-box.innerHTML="<h4>"+treinos[dia].rep+"</h4>";
-box.innerHTML+='<div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>';
-
+document.getElementById("treinoBox").classList.remove("hidden");
+document.getElementById("treinoTitulo").innerText=dia+" — "+treinos[dia].rep;
+let box=document.getElementById("exercicios");
+box.innerHTML="";
 let total=treinos[dia].ex.length+1;
 
-treinos[dia].ex.forEach((e,i)=>{
+treinos[dia].ex.forEach((ex,i)=>{
 let id=dia+"-"+i;
 let checked=progresso[id]?"checked":"";
 let done=progresso[id]?"done":"";
-
-box.innerHTML+=`
-<div class="exercise ${done}">
-<span>${e}</span>
-<input type="checkbox" ${checked} onchange="marcar('${id}','${dia}',${total})">
+box.innerHTML+=`<div class="exercise ${done}">
+<span>${ex}</span>
+<input type="checkbox" ${checked}
+onchange="marcar('${id}','${dia}',${total})">
 </div>`;
 });
 
 let cardioId=dia+"-cardio";
 let cardioChecked=progresso[cardioId]?"checked":"";
 let cardioDone=progresso[cardioId]?"done":"";
-
-box.innerHTML+=`
-<div class="exercise ${cardioDone}">
+box.innerHTML+=`<div class="exercise ${cardioDone}">
 <span><strong>Cardio:</strong> ${treinos[dia].cardio}</span>
-<input type="checkbox" ${cardioChecked} onchange="marcar('${cardioId}','${dia}',${total})">
+<input type="checkbox" ${cardioChecked}
+onchange="marcar('${cardioId}','${dia}',${total})">
 </div>`;
 
 atualizarBarra(dia,total);
@@ -236,53 +257,54 @@ atualizarBarra(dia,total);
 
 function atualizarBarra(dia,total){
 let feitos=Object.keys(progresso).filter(k=>k.startsWith(dia)).length;
-let porcentagem=(feitos/total)*100;
-document.getElementById("progressFill").style.width=porcentagem+"%";
+let porcent=(feitos/total)*100;
+document.getElementById("barra").style.width=porcent+"%";
 
 if(feitos>=total){
+document.querySelectorAll(".day").forEach(el=>{
+if(el.innerText===dia){
+el.style.background="#1e3a2f";
+}
+});
+}
+}
+
+function finalizarTreino(){
 let hoje=new Date().toLocaleDateString();
-historico[hoje]=dia;
+historico[hoje]=true;
 localStorage.setItem(usuario+"_historico",JSON.stringify(historico));
 atualizarStats();
-marcarDiasConcluidos();
-}
+alert("Treino finalizado 🔥");
 }
 
 function atualizarStats(){
-let diasTreinados=Object.keys(historico).length;
-document.getElementById("stats").innerText="Treinos concluídos: "+diasTreinados;
+let total=Object.keys(historico).length;
+document.getElementById("stats").innerText="Treinos concluídos: "+total;
 
 let streak=calcularStreak();
 document.getElementById("streak").innerText="Streak: "+streak+" dias";
 
-let badge="";
-if(streak>=5) badge+='<div class="badge">🔥 5+ dias seguidos</div>';
-if(diasTreinados>=metaPersonalizada) badge+='<div class="badge">🏆 Meta semanal concluída</div>';
+if(streak>=5){
+document.getElementById("badgeArea").innerHTML='<div class="badge">🏆 5 Dias Seguidos</div>';
+}
 
-document.getElementById("badgeArea").innerHTML=badge;
+let lista=document.getElementById("historicoLista");
+lista.innerHTML="";
+Object.keys(historico).forEach(d=>{
+lista.innerHTML+="<div>"+d+" ✔️</div>";
+});
 
-atualizarHistoricoVisual();
 verificarMeta();
 }
 
-function atualizarHistoricoVisual(){
-let lista=document.getElementById("historicoLista");
-lista.innerHTML="";
-Object.keys(historico).forEach(data=>{
-lista.innerHTML+="<div>"+data+" ✔️</div>";
-});
-}
-
 function calcularStreak(){
-let datas=Object.keys(historico).sort((a,b)=>new Date(b)-new Date(a));
+let dias=Object.keys(historico).sort((a,b)=>new Date(b)-new Date(a));
 let streak=0;
 let hoje=new Date();
-
-for(let i=0;i<datas.length;i++){
-let data=new Date(datas[i]);
-let diff=Math.floor((hoje-data)/(1000*60*60*24));
-if(diff===i) streak++;
-else break;
+for(let i=0;i<dias.length;i++){
+let data=new Date(dias[i]);
+let diff=(hoje-data)/(1000*60*60*24);
+if(Math.floor(diff)===i) streak++;
 }
 return streak;
 }
@@ -294,17 +316,11 @@ verificarMeta();
 }
 
 function verificarMeta(){
-let dias=Object.keys(historico).length;
-document.getElementById("metaStatus").innerText="Progresso: "+dias+"/"+metaPersonalizada;
+let total=Object.keys(historico).length;
+document.getElementById("metaStatus").innerText="Meta: "+total+"/"+metaPersonalizada;
+if(total>=metaPersonalizada){
+document.getElementById("badgeArea").innerHTML+='<div class="badge">🎯 Meta Batida</div>';
 }
-
-function marcarDiasConcluidos(){
-document.querySelectorAll(".day").forEach(el=>{
-let dia=el.getAttribute("data-dia");
-if(Object.values(historico).includes(dia)){
-el.classList.add("completed");
-}
-});
 }
 
 </script>
