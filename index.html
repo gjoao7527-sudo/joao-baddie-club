@@ -6,7 +6,6 @@
 <title>João Baddie Club</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff2e93"/>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -18,10 +17,7 @@ body {
   padding:20px;
 }
 
-h1 {
-  text-align:center;
-  color:#ff2e93;
-}
+h1 { text-align:center; color:#ff2e93; }
 
 .section {
   background:#1c1c1c;
@@ -51,10 +47,11 @@ button {
 
 .done { background:#28a745 !important; }
 
-input {
-  padding:6px;
-  border-radius:8px;
-  border:none;
+.treinoBox {
+  margin-top:15px;
+  padding:10px;
+  background:#111;
+  border-radius:10px;
 }
 </style>
 </head>
@@ -72,26 +69,14 @@ Peso atual: <input type="number" id="peso">
 
 <div class="section">
 <h2>📅 Calendário</h2>
-<div class="day" onclick="toggleDay(this,'seg')">Segunda – Glúteo</div>
-<div class="day" onclick="toggleDay(this,'ter')">Terça – Costas + Bíceps</div>
-<div class="day" onclick="toggleDay(this,'qua')">Quarta – Posterior + Glúteo</div>
-<div class="day" onclick="toggleDay(this,'qui')">Quinta – Ombro + Postura</div>
-<div class="day" onclick="toggleDay(this,'sex')">Sexta – Quadríceps + Glúteo</div>
-</div>
 
-<div class="section">
-<h2>⏱️ Timer de Descanso</h2>
-<button onclick="timer(60)">60s</button>
-<button onclick="timer(90)">90s</button>
-<p id="contador"></p>
-</div>
+<div class="day" onclick="mostrarTreino('gluteo')">Segunda – Glúteo</div>
+<div class="day" onclick="mostrarTreino('costas')">Terça – Costas + Bíceps</div>
+<div class="day" onclick="mostrarTreino('posterior')">Quarta – Posterior + Glúteo</div>
+<div class="day" onclick="mostrarTreino('ombro')">Quinta – Ombro + Postura</div>
+<div class="day" onclick="mostrarTreino('quad')">Sexta – Quadríceps + Glúteo</div>
 
-<div class="section">
-<h2>📈 Registrar Carga</h2>
-Exercício: <input type="text" id="exercicio">
-Peso (kg): <input type="number" id="carga">
-<button onclick="salvarCarga()">Salvar</button>
-<p id="listaCargas"></p>
+<div id="treinoDetalhe" class="treinoBox"></div>
 </div>
 
 <script>
@@ -124,29 +109,62 @@ function atualizarGrafico(){
   });
 }
 
-function toggleDay(element,key){
-  element.classList.toggle("done");
-  localStorage.setItem(key, element.classList.contains("done"));
-}
+function mostrarTreino(tipo){
+  let box = document.getElementById("treinoDetalhe");
+  
+  let treinos = {
+    gluteo: `
+      <h3>🍑 Glúteo</h3>
+      Elevação pélvica<br>
+      Elevação unilateral<br>
+      Cadeira abdutora<br>
+      Glúteo no cabo<br>
+      Afundo no smith<br>
+      <br>Cardio: 20min inclinada
+    `,
+    costas: `
+      <h3>💪🏽 Costas + Bíceps</h3>
+      Puxada frontal<br>
+      Remada baixa<br>
+      Remada unilateral<br>
+      Rosca direta<br>
+      Rosca alternada<br>
+      Rosca martelo<br>
+      <br>Cardio: HIIT 15–20min
+    `,
+    posterior: `
+      <h3>🍑 Posterior + Glúteo</h3>
+      Stiff<br>
+      Mesa flexora<br>
+      Passada<br>
+      Glúteo 4 apoios<br>
+      Elevação pélvica<br>
+      Cadeira abdutora<br>
+      <br>Cardio: 20min moderado
+    `,
+    ombro: `
+      <h3>🧍🏽 Ombro + Postura</h3>
+      Elevação lateral<br>
+      Desenvolvimento<br>
+      Elevação frontal<br>
+      Face pull<br>
+      Crucifixo inverso<br>
+      Remada alta<br>
+      <br>Cardio: 15–20min escada
+    `,
+    quad: `
+      <h3>🍑 Quadríceps + Glúteo</h3>
+      Agachamento<br>
+      Leg press<br>
+      Cadeira extensora<br>
+      Afundo búlgaro<br>
+      Agachamento sumô<br>
+      Cadeira abdutora<br>
+      <br>Cardio: 20min inclinada
+    `
+  };
 
-function timer(seg){
-  let tempo = seg;
-  let contador = document.getElementById("contador");
-  let intervalo = setInterval(()=>{
-    contador.innerText = tempo + "s";
-    tempo--;
-    if(tempo<0){
-      clearInterval(intervalo);
-      contador.innerText = "Descanso finalizado 💅🏽🔥";
-    }
-  },1000);
-}
-
-function salvarCarga(){
-  let ex = document.getElementById("exercicio").value;
-  let kg = document.getElementById("carga").value;
-  let registro = ex + " - " + kg + "kg";
-  document.getElementById("listaCargas").innerHTML += registro + "<br>";
+  box.innerHTML = treinos[tipo];
 }
 </script>
 
