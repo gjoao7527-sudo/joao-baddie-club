@@ -6,58 +6,65 @@
 <title>Treino BJ</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000000"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+:root{
+  --bg:#fff;
+  --card:#f2f2f7;
+  --text:#000;
+  --accent:#000;
+}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#000;
+    --card:#111;
+    --text:#fff;
+    --accent:#fff;
+  }
+}
+
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro",sans-serif;
-  background:#000;
-  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
+  background:var(--bg);
+  color:var(--text);
   padding:20px;
 }
 
-h1{
-  text-align:center;
-  font-weight:600;
-  margin-bottom:30px;
-}
+.hidden{display:none;}
 
 .card{
-  background:#111;
+  background:var(--card);
   border-radius:28px;
   padding:20px;
   margin-bottom:25px;
-  box-shadow:0 10px 40px rgba(255,255,255,0.05);
-  animation:fade 0.4s ease;
+  box-shadow:0 15px 40px rgba(0,0,0,0.1);
 }
 
-@keyframes fade{
-  from{opacity:0; transform:translateY(10px);}
-  to{opacity:1; transform:translateY(0);}
+button{
+  background:var(--accent);
+  color:var(--bg);
+  border:none;
+  padding:10px 18px;
+  border-radius:20px;
+  cursor:pointer;
+  margin:5px;
 }
 
 .day{
   padding:14px;
   border-radius:18px;
-  background:#1a1a1a;
-  margin-bottom:10px;
+  margin-bottom:12px;
   cursor:pointer;
-  transition:0.2s;
+  background:rgba(0,0,0,0.05);
 }
-
-.day:hover{ background:#222; }
 
 .exercise{
   display:flex;
   justify-content:space-between;
-  padding:10px 0;
-  border-bottom:1px solid #222;
-  transition:0.2s;
-}
-
-.exercise input{
-  transform:scale(1.2);
+  padding:12px 0;
+  border-bottom:1px solid rgba(0,0,0,0.08);
 }
 
 .done{
@@ -65,200 +72,212 @@ h1{
   opacity:0.4;
 }
 
-.progressBar{
+.progress-bar{
   height:8px;
-  background:#222;
+  background:rgba(0,0,0,0.1);
   border-radius:10px;
-  overflow:hidden;
   margin:15px 0;
 }
 
-.progressFill{
+.progress-fill{
   height:100%;
-  background:#fff;
   width:0%;
-  transition:0.3s;
+  background:var(--accent);
+  border-radius:10px;
+  transition:0.4s;
 }
 
-button{
-  background:#fff;
+.badge{
+  font-size:14px;
+  padding:6px 12px;
+  border-radius:15px;
+  background:gold;
   color:#000;
-  border:none;
-  padding:8px 14px;
-  border-radius:20px;
-  font-weight:500;
-  cursor:pointer;
+  display:inline-block;
   margin-top:10px;
-}
-
-select{
-  background:#1a1a1a;
-  color:#fff;
-  border:none;
-  padding:8px;
-  border-radius:12px;
-  margin-top:10px;
-}
-
-.timer{
-  font-size:24px;
-  margin-top:10px;
-  font-weight:600;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Treino BJ</h1>
+<div id="loginScreen" class="card">
+<h2>Entrar</h2>
+<button onclick="login('Joao')">João</button>
+<button onclick="login('Beatriz')">Beatriz</button>
+</div>
+
+<div id="app" class="hidden">
+
+<h2 id="welcome"></h2>
 
 <div class="card">
-<h2>Meta de Peso</h2>
-<input type="number" id="peso" placeholder="Peso atual">
-<button onclick="salvarPeso()">Salvar</button>
-<canvas id="grafico"></canvas>
+<h3>Estatísticas</h3>
+<p id="stats"></p>
+<p id="streak"></p>
+<div id="badgeArea"></div>
 </div>
 
 <div class="card">
-<h2>Treinos</h2>
+<h3>Treinos</h3>
 
-<div class="day" onclick="abrirTreino('gluteo')">Segunda – Glúteo</div>
-<div class="day" onclick="abrirTreino('costas')">Terça – Costas + Bíceps</div>
-<div class="day" onclick="abrirTreino('posterior')">Quarta – Posterior + Glúteo</div>
-<div class="day" onclick="abrirTreino('ombro')">Quinta – Ombro</div>
-<div class="day" onclick="abrirTreino('quad')">Sexta – Quadríceps + Glúteo</div>
+<div class="day" onclick="abrirTreino('segunda')">🍑 Segunda – Glúteo</div>
+<div class="day" onclick="abrirTreino('terca')">💪 Terça – Costas + Bíceps</div>
+<div class="day" onclick="abrirTreino('quarta')">🍑 Quarta – Posterior + Glúteo</div>
+<div class="day" onclick="abrirTreino('quinta')">🧍 Quinta – Ombro + Postura</div>
+<div class="day" onclick="abrirTreino('sexta')">🍑 Sexta – Quadríceps + Glúteo</div>
+<div class="day" onclick="abrirTreino('sabado')">🔥 Sábado – Superior + Abdômen</div>
+<div class="day" onclick="abrirTreino('domingo')">🏃 Domingo – Cardio</div>
 
-<div id="treinoBox" style="margin-top:20px;"></div>
+<div id="treinoBox"></div>
 
 </div>
 
-<div class="card">
-<h2>Histórico</h2>
-<div id="historico"></div>
 </div>
 
 <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
+let usuario = localStorage.getItem("usuario");
+let progresso = {};
+let historico = {};
+
+if(usuario){
+  iniciarApp();
 }
 
-let pesos = JSON.parse(localStorage.getItem("pesos")) || [];
-let progresso = JSON.parse(localStorage.getItem("progresso")) || {};
-let historico = JSON.parse(localStorage.getItem("historico")) || {};
-let intervalo;
-let tempo = 60;
-
-function salvarPeso(){
-  let peso = document.getElementById("peso").value;
-  let data = new Date().toLocaleDateString();
-  pesos.push({data,peso});
-  localStorage.setItem("pesos", JSON.stringify(pesos));
-  atualizarGrafico();
+function login(nome){
+  usuario = nome;
+  localStorage.setItem("usuario",nome);
+  iniciarApp();
 }
 
-function atualizarGrafico(){
-  let ctx = document.getElementById('grafico');
-  new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:pesos.map(p=>p.data),
-      datasets:[{
-        label:'Peso',
-        data:pesos.map(p=>p.peso),
-        borderColor:'#fff'
-      }]
-    }
-  });
+function iniciarApp(){
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  document.getElementById("welcome").innerText = "Olá, "+usuario;
+
+  progresso = JSON.parse(localStorage.getItem(usuario+"_progresso")) || {};
+  historico = JSON.parse(localStorage.getItem(usuario+"_historico")) || {};
+
+  atualizarStats();
 }
 
-function abrirTreino(tipo){
+function abrirTreino(dia){
 
-  let treinos = {
-    gluteo:["Elevação pélvica","Elevação unilateral","Cadeira abdutora","Glúteo no cabo","Afundo"],
-    costas:["Puxada frontal","Remada baixa","Remada unilateral","Rosca direta","Rosca alternada","Rosca martelo"],
-    posterior:["Stiff","Mesa flexora","Passada","Glúteo 4 apoios","Elevação pélvica","Abdutora"],
-    ombro:["Elevação lateral","Desenvolvimento","Elevação frontal","Face pull","Crucifixo inverso","Remada alta"],
-    quad:["Agachamento","Leg press","Cadeira extensora","Afundo búlgaro","Agachamento sumô","Abdutora"]
-  };
+const treinos = {
 
-  let box = document.getElementById("treinoBox");
-  box.innerHTML = `<h3>${tipo.toUpperCase()}</h3>
-  <div class="progressBar"><div id="progress" class="progressFill"></div></div>`;
+segunda:{
+rep:"4x 8–12",
+ex:["Elevação pélvica","Elevação pélvica unilateral","Cadeira abdutora","Glúteo no cabo","Afundo no smith"],
+cardio:"15–20 min caminhada normal na esteira"
+},
 
-  treinos[tipo].forEach((ex,i)=>{
-    let checked = progresso[tipo+"-"+i] ? "checked" : "";
-    let doneClass = progresso[tipo+"-"+i] ? "done" : "";
+terca:{
+rep:"3–4x 10–12",
+ex:["Puxada frontal","Remada baixa","Remada unilateral","Rosca direta","Rosca alternada","Rosca martelo"],
+cardio:"15 min HIIT (30s corrida + 1min andando)"
+},
 
-    box.innerHTML += `
-      <div class="exercise ${doneClass}">
-        <span>${ex}</span>
-        <input type="checkbox" ${checked}
-        onchange="marcar('${tipo}-${i}',this,'${tipo}',${treinos[tipo].length})">
-      </div>
-    `;
-  });
+quarta:{
+rep:"4x 8–12",
+ex:["Stiff","Mesa flexora","Passada","Glúteo 4 apoios","Elevação pélvica","Cadeira abdutora"],
+cardio:"15–20 min caminhada moderada"
+},
 
-  box.innerHTML += `
-    <h4 style="margin-top:20px;">Cardio</h4>
-    <select>
-      <option>HIIT</option>
-      <option>Esteira</option>
-    </select>
+quinta:{
+rep:"3x 12–15",
+ex:["Elevação lateral","Desenvolvimento com halteres","Elevação frontal","Face pull","Crucifixo inverso","Remada alta"],
+cardio:"15 min corrida leve"
+},
 
-    <h4>Descanso</h4>
-    <div class="timer" id="timer">01:00</div>
-    <button onclick="iniciarTimer()">Iniciar</button>
-  `;
+sexta:{
+rep:"4x 8–12",
+ex:["Agachamento","Leg press","Cadeira extensora","Afundo búlgaro","Agachamento sumô","Cadeira abdutora"],
+cardio:"15–20 min caminhada moderada"
+},
 
-  atualizarProgresso(tipo, treinos[tipo].length);
+sabado:{
+rep:"3x 10–12",
+ex:["Puxada frontal","Remada baixa","Elevação lateral","Rosca direta","Tríceps corda","Desenvolvimento com halteres","Prancha 3x 30–60s","Abdominal infra 3x 15"],
+cardio:"10–15 min leve"
+},
+
+domingo:{
+rep:"",
+ex:["30–40 min caminhada ao ar livre OU 20 min caminhada + 10 min corrida leve"],
+cardio:""
 }
 
-function marcar(id,checkbox,tipo,total){
-  if(checkbox.checked){
-    progresso[id]=true;
-  } else {
-    delete progresso[id];
-  }
-  localStorage.setItem("progresso", JSON.stringify(progresso));
-  atualizarProgresso(tipo,total);
+};
 
-  if(Object.keys(progresso).filter(k=>k.startsWith(tipo)).length===total){
-    historico[new Date().toLocaleDateString()+" - "+tipo]="Concluído";
-    localStorage.setItem("historico", JSON.stringify(historico));
-    atualizarHistorico();
-  }
+let box = document.getElementById("treinoBox");
+box.innerHTML="<h4>"+treinos[dia].rep+"</h4>";
+box.innerHTML+='<div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>';
+
+treinos[dia].ex.forEach((e,i)=>{
+let id=dia+"-"+i;
+let checked=progresso[id]?"checked":"";
+let done=progresso[id]?"done":"";
+
+box.innerHTML+=`
+<div class="exercise ${done}">
+<span>${e}</span>
+<input type="checkbox" ${checked} onchange="marcar('${id}','${dia}',${treinos[dia].ex.length})">
+</div>`;
+});
+
+box.innerHTML+="<p><strong>Cardio:</strong> "+treinos[dia].cardio+"</p>";
+
+atualizarBarra(dia,treinos[dia].ex.length);
 }
 
-function atualizarProgresso(tipo,total){
-  let feitos = Object.keys(progresso).filter(k=>k.startsWith(tipo)).length;
-  let porcent = (feitos/total)*100;
-  document.getElementById("progress").style.width = porcent+"%";
+function marcar(id,dia,total){
+if(progresso[id]) delete progresso[id];
+else progresso[id]=true;
+
+localStorage.setItem(usuario+"_progresso",JSON.stringify(progresso));
+atualizarBarra(dia,total);
 }
 
-function atualizarHistorico(){
-  let h = document.getElementById("historico");
-  h.innerHTML="";
-  for(let dia in historico){
-    h.innerHTML += `<div style="padding:5px 0;opacity:0.7;">${dia}</div>`;
-  }
+function atualizarBarra(dia,total){
+let feitos=Object.keys(progresso).filter(k=>k.startsWith(dia)).length;
+let porcentagem=(feitos/total)*100;
+document.getElementById("progressFill").style.width=porcentagem+"%";
+
+if(feitos===total){
+let hoje=new Date().toLocaleDateString();
+historico[hoje]=true;
+localStorage.setItem(usuario+"_historico",JSON.stringify(historico));
+atualizarStats();
+}
 }
 
-function iniciarTimer(){
-  clearInterval(intervalo);
-  tempo = 60;
-  intervalo = setInterval(()=>{
-    tempo--;
-    let min = String(Math.floor(tempo/60)).padStart(2,'0');
-    let seg = String(tempo%60).padStart(2,'0');
-    document.getElementById("timer").innerText = min+":"+seg;
-    if(tempo<=0){
-      clearInterval(intervalo);
-    }
-  },1000);
+function atualizarStats(){
+let diasTreinados=Object.keys(historico).length;
+document.getElementById("stats").innerText="Treinos concluídos: "+diasTreinados;
+
+let streak=calcularStreak();
+document.getElementById("streak").innerText="Streak atual: "+streak+" dias";
+
+if(streak>=5){
+document.getElementById("badgeArea").innerHTML='<div class="badge">🔥 Consistência 5+ dias</div>';
+}else{
+document.getElementById("badgeArea").innerHTML="";
+}
 }
 
-atualizarGrafico();
-atualizarHistorico();
+function calcularStreak(){
+let datas=Object.keys(historico).sort((a,b)=>new Date(b)-new Date(a));
+let streak=0;
+let hoje=new Date();
+
+for(let i=0;i<datas.length;i++){
+let data=new Date(datas[i]);
+let diff=(hoje-data)/(1000*60*60*24);
+if(Math.floor(diff)===i) streak++;
+else break;
+}
+return streak;
+}
 </script>
 
 </body>
