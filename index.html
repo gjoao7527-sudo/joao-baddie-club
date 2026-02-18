@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Treino BJ</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000"/>
 
 <style>
 :root{
@@ -49,7 +48,7 @@ button{
   padding:10px 18px;
   border-radius:20px;
   cursor:pointer;
-  margin:5px;
+  margin:5px 0;
 }
 
 .day{
@@ -58,6 +57,11 @@ button{
   margin-bottom:12px;
   cursor:pointer;
   background:rgba(0,0,0,0.05);
+  transition:0.3s;
+}
+
+.day.completed{
+  background:rgba(0,0,0,0.25);
 }
 
 .exercise{
@@ -116,18 +120,26 @@ button{
 <p id="stats"></p>
 <p id="streak"></p>
 <div id="badgeArea"></div>
+
+<h4>Meta Personalizada</h4>
+<input type="number" id="metaInput" placeholder="Treinos por semana">
+<button onclick="salvarMeta()">Salvar Meta</button>
+<p id="metaStatus"></p>
+
+<h4>Histórico</h4>
+<div id="historicoLista"></div>
 </div>
 
 <div class="card">
 <h3>Treinos</h3>
 
-<div class="day" onclick="abrirTreino('segunda')">🍑 Segunda – Glúteo</div>
-<div class="day" onclick="abrirTreino('terca')">💪 Terça – Costas + Bíceps</div>
-<div class="day" onclick="abrirTreino('quarta')">🍑 Quarta – Posterior + Glúteo</div>
-<div class="day" onclick="abrirTreino('quinta')">🧍 Quinta – Ombro + Postura</div>
-<div class="day" onclick="abrirTreino('sexta')">🍑 Sexta – Quadríceps + Glúteo</div>
-<div class="day" onclick="abrirTreino('sabado')">🔥 Sábado – Superior + Abdômen</div>
-<div class="day" onclick="abrirTreino('domingo')">🏃 Domingo – Cardio</div>
+<div class="day" data-dia="segunda" onclick="abrirTreino('segunda')">🍑 Segunda – Glúteo</div>
+<div class="day" data-dia="terca" onclick="abrirTreino('terca')">💪 Terça – Costas + Bíceps</div>
+<div class="day" data-dia="quarta" onclick="abrirTreino('quarta')">🍑 Quarta – Posterior + Glúteo</div>
+<div class="day" data-dia="quinta" onclick="abrirTreino('quinta')">🧍 Quinta – Ombro + Postura</div>
+<div class="day" data-dia="sexta" onclick="abrirTreino('sexta')">🍑 Sexta – Quadríceps + Glúteo</div>
+<div class="day" data-dia="sabado" onclick="abrirTreino('sabado')">🔥 Sábado – Superior + Abdômen</div>
+<div class="day" data-dia="domingo" onclick="abrirTreino('domingo')">🏃 Domingo – Cardio</div>
 
 <div id="treinoBox"></div>
 
@@ -136,82 +148,58 @@ button{
 </div>
 
 <script>
+
 let usuario = localStorage.getItem("usuario");
 let progresso = {};
 let historico = {};
+let metaPersonalizada = 5;
 
-if(usuario){
-  iniciarApp();
-}
+if(usuario) iniciarApp();
 
 function login(nome){
-  usuario = nome;
-  localStorage.setItem("usuario",nome);
-  iniciarApp();
+usuario = nome;
+localStorage.setItem("usuario",nome);
+iniciarApp();
 }
 
 function iniciarApp(){
-  document.getElementById("loginScreen").classList.add("hidden");
-  document.getElementById("app").classList.remove("hidden");
-  document.getElementById("welcome").innerText = "Olá, "+usuario;
+document.getElementById("loginScreen").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+document.getElementById("welcome").innerText="Olá, "+usuario;
 
-  progresso = JSON.parse(localStorage.getItem(usuario+"_progresso")) || {};
-  historico = JSON.parse(localStorage.getItem(usuario+"_historico")) || {};
+progresso = JSON.parse(localStorage.getItem(usuario+"_progresso")) || {};
+historico = JSON.parse(localStorage.getItem(usuario+"_historico")) || {};
+metaPersonalizada = localStorage.getItem(usuario+"_meta") || 5;
 
-  atualizarStats();
+atualizarStats();
+marcarDiasConcluidos();
 }
 
 function abrirTreino(dia){
 
-const treinos = {
+const treinos={
 
-segunda:{
-rep:"4x 8–12",
-ex:["Elevação pélvica","Elevação pélvica unilateral","Cadeira abdutora","Glúteo no cabo","Afundo no smith"],
-cardio:"15–20 min caminhada normal na esteira"
-},
+segunda:{rep:"4x 8–12",ex:["Elevação pélvica","Elevação pélvica unilateral","Cadeira abdutora","Glúteo no cabo","Afundo no smith"],cardio:"15–20 min caminhada normal na esteira"},
 
-terca:{
-rep:"3–4x 10–12",
-ex:["Puxada frontal","Remada baixa","Remada unilateral","Rosca direta","Rosca alternada","Rosca martelo"],
-cardio:"15 min HIIT (30s corrida + 1min andando)"
-},
+terca:{rep:"3–4x 10–12",ex:["Puxada frontal","Remada baixa","Remada unilateral","Rosca direta","Rosca alternada","Rosca martelo"],cardio:"15 min HIIT (30s corrida + 1min andando)"},
 
-quarta:{
-rep:"4x 8–12",
-ex:["Stiff","Mesa flexora","Passada","Glúteo 4 apoios","Elevação pélvica","Cadeira abdutora"],
-cardio:"15–20 min caminhada moderada"
-},
+quarta:{rep:"4x 8–12",ex:["Stiff","Mesa flexora","Passada","Glúteo 4 apoios","Elevação pélvica","Cadeira abdutora"],cardio:"15–20 min caminhada moderada"},
 
-quinta:{
-rep:"3x 12–15",
-ex:["Elevação lateral","Desenvolvimento com halteres","Elevação frontal","Face pull","Crucifixo inverso","Remada alta"],
-cardio:"15 min corrida leve"
-},
+quinta:{rep:"3x 12–15",ex:["Elevação lateral","Desenvolvimento com halteres","Elevação frontal","Face pull","Crucifixo inverso","Remada alta"],cardio:"15 min corrida leve"},
 
-sexta:{
-rep:"4x 8–12",
-ex:["Agachamento","Leg press","Cadeira extensora","Afundo búlgaro","Agachamento sumô","Cadeira abdutora"],
-cardio:"15–20 min caminhada moderada"
-},
+sexta:{rep:"4x 8–12",ex:["Agachamento","Leg press","Cadeira extensora","Afundo búlgaro","Agachamento sumô","Cadeira abdutora"],cardio:"15–20 min caminhada moderada"},
 
-sabado:{
-rep:"3x 10–12",
-ex:["Puxada frontal","Remada baixa","Elevação lateral","Rosca direta","Tríceps corda","Desenvolvimento com halteres","Prancha 3x 30–60s","Abdominal infra 3x 15"],
-cardio:"10–15 min leve"
-},
+sabado:{rep:"3x 10–12",ex:["Puxada frontal","Remada baixa","Elevação lateral","Rosca direta","Tríceps corda","Desenvolvimento com halteres","Prancha 3x 30–60s","Abdominal infra 3x 15"],cardio:"10–15 min leve"},
 
-domingo:{
-rep:"",
-ex:["30–40 min caminhada ao ar livre OU 20 min caminhada + 10 min corrida leve"],
-cardio:""
-}
+domingo:{rep:"",ex:["30–40 min caminhada OU 20 min caminhada + 10 min corrida leve"],cardio:""}
 
 };
 
-let box = document.getElementById("treinoBox");
+let box=document.getElementById("treinoBox");
 box.innerHTML="<h4>"+treinos[dia].rep+"</h4>";
 box.innerHTML+='<div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>';
+
+let total=treinos[dia].ex.length+1;
 
 treinos[dia].ex.forEach((e,i)=>{
 let id=dia+"-"+i;
@@ -221,13 +209,21 @@ let done=progresso[id]?"done":"";
 box.innerHTML+=`
 <div class="exercise ${done}">
 <span>${e}</span>
-<input type="checkbox" ${checked} onchange="marcar('${id}','${dia}',${treinos[dia].ex.length})">
+<input type="checkbox" ${checked} onchange="marcar('${id}','${dia}',${total})">
 </div>`;
 });
 
-box.innerHTML+="<p><strong>Cardio:</strong> "+treinos[dia].cardio+"</p>";
+let cardioId=dia+"-cardio";
+let cardioChecked=progresso[cardioId]?"checked":"";
+let cardioDone=progresso[cardioId]?"done":"";
 
-atualizarBarra(dia,treinos[dia].ex.length);
+box.innerHTML+=`
+<div class="exercise ${cardioDone}">
+<span><strong>Cardio:</strong> ${treinos[dia].cardio}</span>
+<input type="checkbox" ${cardioChecked} onchange="marcar('${cardioId}','${dia}',${total})">
+</div>`;
+
+atualizarBarra(dia,total);
 }
 
 function marcar(id,dia,total){
@@ -243,11 +239,12 @@ let feitos=Object.keys(progresso).filter(k=>k.startsWith(dia)).length;
 let porcentagem=(feitos/total)*100;
 document.getElementById("progressFill").style.width=porcentagem+"%";
 
-if(feitos===total){
+if(feitos>=total){
 let hoje=new Date().toLocaleDateString();
-historico[hoje]=true;
+historico[hoje]=dia;
 localStorage.setItem(usuario+"_historico",JSON.stringify(historico));
 atualizarStats();
+marcarDiasConcluidos();
 }
 }
 
@@ -256,13 +253,24 @@ let diasTreinados=Object.keys(historico).length;
 document.getElementById("stats").innerText="Treinos concluídos: "+diasTreinados;
 
 let streak=calcularStreak();
-document.getElementById("streak").innerText="Streak atual: "+streak+" dias";
+document.getElementById("streak").innerText="Streak: "+streak+" dias";
 
-if(streak>=5){
-document.getElementById("badgeArea").innerHTML='<div class="badge">🔥 Consistência 5+ dias</div>';
-}else{
-document.getElementById("badgeArea").innerHTML="";
+let badge="";
+if(streak>=5) badge+='<div class="badge">🔥 5+ dias seguidos</div>';
+if(diasTreinados>=metaPersonalizada) badge+='<div class="badge">🏆 Meta semanal concluída</div>';
+
+document.getElementById("badgeArea").innerHTML=badge;
+
+atualizarHistoricoVisual();
+verificarMeta();
 }
+
+function atualizarHistoricoVisual(){
+let lista=document.getElementById("historicoLista");
+lista.innerHTML="";
+Object.keys(historico).forEach(data=>{
+lista.innerHTML+="<div>"+data+" ✔️</div>";
+});
 }
 
 function calcularStreak(){
@@ -272,12 +280,33 @@ let hoje=new Date();
 
 for(let i=0;i<datas.length;i++){
 let data=new Date(datas[i]);
-let diff=(hoje-data)/(1000*60*60*24);
-if(Math.floor(diff)===i) streak++;
+let diff=Math.floor((hoje-data)/(1000*60*60*24));
+if(diff===i) streak++;
 else break;
 }
 return streak;
 }
+
+function salvarMeta(){
+metaPersonalizada=document.getElementById("metaInput").value;
+localStorage.setItem(usuario+"_meta",metaPersonalizada);
+verificarMeta();
+}
+
+function verificarMeta(){
+let dias=Object.keys(historico).length;
+document.getElementById("metaStatus").innerText="Progresso: "+dias+"/"+metaPersonalizada;
+}
+
+function marcarDiasConcluidos(){
+document.querySelectorAll(".day").forEach(el=>{
+let dia=el.getAttribute("data-dia");
+if(Object.values(historico).includes(dia)){
+el.classList.add("completed");
+}
+});
+}
+
 </script>
 
 </body>
